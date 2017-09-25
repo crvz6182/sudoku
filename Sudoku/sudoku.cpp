@@ -4,7 +4,8 @@
 
 using namespace std;
 ofstream out("sudoku.txt");
-string result = "";
+char result[163000001];
+int r_tag = 0;
 
 void transform(int sudoku[][9], int x, int y, int X, int Y, int* others, int num) {
 	int sudoku_temp[9][9];
@@ -139,14 +140,14 @@ void transform(int sudoku[][9], int x, int y, int X, int Y, int* others, int num
 							}
 							for (int i = 0; i < 9; i++) {
 								for (int j = 0; j < 9; j++) {
-									result += to_string(sudoku_temp[i][j]);
+									result[r_tag++] = char(sudoku_temp[i][j] + '0');
 									if (j == 8)
-										result += "\n";
+										result[r_tag++] = '\n';
 									else
-										result += " ";
+										result[r_tag++] = ' ';
 								}
 							}
-							result += "\n";
+							result[r_tag++] = '\n';
 							memcpy(sudoku_temp, sudoku, sizeof(sudoku_temp));
 							num--;
 							if (num == 0)
@@ -160,142 +161,152 @@ void transform(int sudoku[][9], int x, int y, int X, int Y, int* others, int num
 	return;
 }
 
+bool isequal(int sudoku[][9], int m, int n, int i) {
+	int temp = 0;
+	if (sudoku[m][n] == i)
+		return true;
+	temp = sudoku[m][n] / 10;
+	if (i == temp % 10)
+		return true;
+	return false;
+}
+
+int feasible(int sudoku[][9], int x, int y, int i) {
+	int m = 0, n = 0;
+	switch (x / 3 * 3 + y / 3) {
+	case 0:
+		for (m = 0; m < 3; m++)
+			for (n = 0; n < 3; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 1:
+		for (m = 0; m < 3; m++)
+			for (n = 3; n < 6; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 2:
+		for (m = 0; m < 3; m++)
+			for (n = 6; n < 9; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 3:
+		for (m = 3; m < 6; m++)
+			for (n = 0; n < 3; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 4:
+		for (m = 3; m < 6; m++)
+			for (n = 3; n < 6; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 5:
+		for (m = 3; m < 6; m++)
+			for (n = 6; n < 9; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 6:
+		for (m = 6; m < 9; m++)
+			for (n = 0; n < 3; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 7:
+		for (m = 6; m < 9; m++)
+			for (n = 3; n < 6; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	case 8:
+		for (m = 6; m < 9; m++)
+			for (n = 6; n < 9; n++)
+				if (isequal(sudoku, m, n, i))return 0;
+		break;
+	}
+	return 1;
+}
+
+
 void solve(int sudoku_s[][9]) {
 	int sudoku[9][9];
+	int st = 0;
 	memcpy(sudoku, sudoku_s, sizeof(sudoku));
-	int x = 0, y = 0, i = 0, j = 0, m = 0, n = 0, tag = 1, temp = 0;
-	while (x != 9) {
-		if (sudoku[x][y] == 0) {
+	int x = 0, y = 0, i = 0, j = 0, m = 0, n = 0, tag = 1;
+	while (x != 9 && y != -1) {
+		if (0 <= x&&x <= 8 && 0 <= y&&y <= 8 && sudoku[x][y] == 0) {
 			for (i = 1; i <= 9; i++) {
-				switch (x / 3 * 3 + y / 3) {
-				case 0:
-					for (m = 0; m < 3; m++)
-						for (n = 0; n < 3; n++) {
-							if (sudoku[m][n] == i) {
-								tag = 0;
-								break;
-							}
-							temp = sudoku[m][n] / 10;
-							while (temp != 0) {
-								if (sudoku[m][n] == temp % 10) {
-									tag = 0;
-									break;
-								}
-								if (tag = 0)break;
-								temp = sudoku[m][n] / 10;
-							}
-						}
-					break;
-				case 1:
-					for (m = 0; m < 3; m++)
-						for (n = 3; n < 6; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 2:
-					for (m = 0; m < 3; m++)
-						for (n = 6; n < 9; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 3:
-					for (m = 3; m < 6; m++)
-						for (n = 0; n < 3; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 4:
-					for (m = 3; m < 6; m++)
-						for (n = 3; n < 6; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 5:
-					for (m = 3; m < 6; m++)
-						for (n = 6; n < 9; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 6:
-					for (m = 6; m < 9; m++)
-						for (n = 0; n < 3; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 7:
-					for (m = 6; m < 9; m++)
-						for (n = 3; n < 6; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				case 8:
-					for (m = 6; m < 9; m++)
-						for (n = 6; n < 9; n++)
-							if (((sudoku[m][n] % 100) / 10) == i || sudoku[m][n] == i)
-								tag = 0;
-					break;
-				}
+				tag = feasible(sudoku, x, y, i);
 				if (tag == 0) {
 					tag = 1;
 					continue;
 				}
 				for (j = 0; j < 9; j++) {
-					if (((sudoku[x][j]%100)/10) == i|| sudoku[x][j] == i) break;
-					if (((sudoku[j][y]%100)/10) == i|| sudoku[j][y] == i) break;
+					if (sudoku[x][j] == i) break;
+					if (sudoku[j][y] == i) break;
+					if (isequal(sudoku, x, j, i))break;
+					if (isequal(sudoku, j, y, i))break;
 				}
 				if (j != 9)continue;
 				sudoku[x][y] = (sudoku[x][y] * 10 + i);
 			}
 			sudoku[x][y] = sudoku[x][y] * 10;
 			if (sudoku[x][y] == 0) {
+				st = 1;
 				y--;
 				if (y == -1) {
 					x--; y = 8;
 				}
-				if (x == 0 && y == 0) {
-					cout << "无解"; exit(1);
-				}
 			}
 			else {
+				st = 0;
 				y++;
 				if (y == 9) {
 					x++; y = 0;
 				}
 			}
 		}
-		else if (sudoku[x][y] < 100 && sudoku[x][y]>9) {
+		else if (0 <= x&&x <= 8 && 0 <= y&&y <= 8 && sudoku[x][y] < 100 && sudoku[x][y]>9) {
 			sudoku[x][y] = 0;
+			st = 1;
 			y--;
 			if (y == -1) {
 				x--; y = 8;
 			}
 		}
-		else if (sudoku[x][y] > 100) {
-			sudoku[x][y] = (sudoku[x][y] % 100) * 10;
+		else if (0 <= x&&x <= 8 && 0 <= y&&y <= 8 && sudoku[x][y] > 100) {
+			sudoku[x][y] = (sudoku[x][y] / 100) * 10;
+			st = 0;
 			y++;
 			if (y == 9) {
 				x++; y = 0;
 			}
 		}
 		else {
-			y++;
-			if (y == 9) {
-				x++; y = 0;
+			switch (st) {
+			case 0:
+				y++;
+				if (y == 9) {
+					x++; y = 0;
+				}break;
+			case 1:
+				y--;
+				if (y == -1) {
+					x--; y = 8;
+				}
+				break;
 			}
+		}
+		if (y == -1) {
+			cout << "无解\n"; exit(1);
 		}
 	}
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			if (sudoku[i][j] >= 10)
-				sudoku[i][j] = (sudoku[i][j] % 100) / 10;
-			result += to_string(sudoku[i][j]);
+			result[r_tag++] = char(sudoku[i][j] + '0');
 			if (j == 8)
-				result += "\n";
+				result[r_tag++] = '\n';
 			else
-				result += " ";
+				result[r_tag++] = ' ';
 		}
 	}
-	result += "\n";
+	result[r_tag++] = '\n';
 	return;
 }
 
@@ -333,7 +344,7 @@ int main(int argc, char * argv[]) {
 									break;
 								}
 							}
-							if (X == 6)X = 9; if (Y == 6)Y = 9; if (x == 8)x = 6; if (y == 8)y = 6;
+							if (X == 6)X = 9; if (Y == 6)Y = 9; if (x == 6)x = 9; if (y == 6)y = 9;
 							transform(sudoku, x, y, X, Y, others, num); num -= 5184;
 							transform(sudoku, y, x, X, Y, others, num); num -= 5184;
 							transform(sudoku, x, y, Y, X, others, num); num -= 5184;
